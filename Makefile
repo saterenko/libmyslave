@@ -6,7 +6,7 @@ SRC = ./src
 BUILD = ./objs
 TEST = ./tests
 
-CFLAGS = -g -Wall -std=gnu99
+CFLAGS = -g -Wall -O3 -std=gnu99
 
 INCS = -I$(SRC) -I/usr/include/mysql
 
@@ -15,6 +15,7 @@ LIBS = -L/usr/lib/mysql
 LDLIBS = -lmysqlclient_r -pthread
 
 DEPS = $(SRC)/cor_array.h \
+	$(SRC)/cor_mysql.h \
 	$(SRC)/cor_pool.h \
 	$(SRC)/myslave.h \
 	$(SRC)/myslave_table.h \
@@ -22,6 +23,7 @@ DEPS = $(SRC)/cor_array.h \
 	$(TEST)/cor_test.h
 
 OBJS = $(BUILD)/cor_array.o \
+	$(BUILD)/cor_mysql.o \
 	$(BUILD)/cor_pool.o \
 	$(BUILD)/myslave.o \
 	$(BUILD)/myslave_table.o
@@ -43,6 +45,10 @@ $(BUILD)/cor_pool.o: $(DEPS) \
 	$(SRC)/cor_pool.c
 	$(CC) -c $(CFLAGS) $(INCS) -o $(BUILD)/cor_pool.o $(SRC)/cor_pool.c
 
+$(BUILD)/cor_mysql.o: $(DEPS) \
+	$(SRC)/cor_mysql.c
+	$(CC) -c $(CFLAGS) $(INCS) -o $(BUILD)/cor_mysql.o $(SRC)/cor_mysql.c
+
 $(BUILD)/myslave.o: $(DEPS) \
 	$(SRC)/myslave.c
 	$(CC) -c $(CFLAGS) $(INCS) -o $(BUILD)/myslave.o $(SRC)/myslave.c
@@ -53,7 +59,7 @@ $(BUILD)/myslave_table.o: $(DEPS) \
 
 $(BUILD)/test_myslave: \
 	$(BUILD)/test_myslave.o
-	$(LINK) -o $(BUILD)/test_myslave $(LIBS) $(BUILD)/test_myslave.o $(LDLIBS) $(LIB)
+	$(LINK) -o $(BUILD)/test_myslave $(LIBS) $(BUILD)/test_myslave.o $(LIB) $(LDLIBS)
 
 $(BUILD)/test_myslave.o: $(DEPS) \
 	$(TEST)/test_myslave.c
