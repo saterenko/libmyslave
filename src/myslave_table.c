@@ -43,38 +43,75 @@ myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_tr
 
 }
 
-myslave_field_type_t
-myslave_table_get_field_type(const char *type)
+void
+myslave_table_set_field_type(myslave_field_t *f, const char *type_name)
 {
-/*
-bigint(20) 
-bit(1) 
-blob 
-char(16) 
-date 
-datetime 
-decimal(10,0) 
-double 
-enum('one','two','three') 
-float 
-int(11) 
-longblob 
-longtext 
-mediumblob 
-mediumint(9) 
-mediumtext 
-set('one','two') 
-smallint(6) 
-text 
-time 
-timestamp 
-tinyblob 
-tinyint(4) 
-tinytext 
-varchar(256) 
-year(4) 
-*/
+    /* !!! enum  */
+    int len = strlen(type_name);
+    const char *p = type_name;
+    const char *end = p + len;
+    /*  search for size  */
+    for (int i = 0; i < len; i++) {
+        if (p[i] == '(') {
+            end = p + i;
+            for (; i < size; i++) {
+                if (p[i] >= '0' && p[i] <= '9') {
+                    f->size = f->size * 10 + (p[i] - '0');
+                } else if (p[i] == ')') {
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    /*  determine type  */
+    switch (end - p) {
+        case 3:
+// bit 
+// int
+// set
+            break;
+        case 4:
+// blob
+// char
+// date 
+// enum
+// text 
+// time 
+// year 
+            break;
+        case 5:
+// float 
+            break;
+        case 6:
+// bigint
+// double 
+            break;
+        case 7:
+// decimal
+// tinyint
+// varchar
+            break;
+        case 8:
+// datetime 
+// longblob 
+// longtext 
+// smallint
+// tinyblob 
+// tinytext 
+            break;
+        case 9:
+// mediumint
+// timestamp 
+            break;
+        case 10:
+// mediumblob 
+// mediumtext 
+            break;
+    }
+
 }
+
 
 /*
   val_int | int(11) | (null) | NO |  | (null) | 

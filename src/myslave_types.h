@@ -80,4 +80,6 @@ typedef myslave_str_t myslave_longblob_t;
 typedef myslave_str_t myslave_mediumblob_t;
 typedef myslave_str_t myslave_tinyblob_t;
 
+myslave_field_type_t myslave_type_get_by_name(const char *name, int *size);
+
 #endif
