@@ -5,6 +5,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "myslave_utils.h"
+
 #define myslave_ok  0
 #define myslave_error -1
 
@@ -46,12 +48,6 @@ typedef enum
     MYSLAVE_MEDIUMBLOB,
     MYSLAVE_TINYBLOB
 } myslave_field_type_t;
-
-typedef struct
-{
-    int size;
-    char *data;
-} myslave_str_t;
 
 typedef uint32_t myslave_int_t;
 typedef unsigned long long myslave_bigint_t;

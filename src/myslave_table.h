@@ -40,7 +40,7 @@ typedef struct
 {
     myslave_str_t name;
     myslave_field_type_t type;
-    myslave_str_t def;
+    myslave_str_t default_value;
     int size;
     unsigned null:1;
 } myslave_field_t;

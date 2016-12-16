@@ -1,7 +1,8 @@
 #include "myslave_table.h"
+#include "myslave_utils.h"
 
 static int myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_trace_t *trace);
-static void myslave_table_set_field_type(myslave_field_t *f, const char *name);
+static void myslave_table_set_field_type_and_size(myslave_field_t *f, const char *name);
 
 int
 myslave_table_load_info(myslave_table_t *t, cor_mysql_t *m, cor_pool_t *pool, cor_trace_t *trace)
@@ -25,7 +26,7 @@ myslave_table_load_info(myslave_table_t *t, cor_mysql_t *m, cor_pool_t *pool, co
 int
 myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_trace_t *trace)
 {
-    if (!row || !row[0] || !row[1] || !row[2] || !row[3] || !row[4]) {
+    if (!row || !row[0] || !row[1] || !row[2] || !row[3] || !row[5]) {
         return -1;
     }
     myslave_field_t *f = (myslave_field_t *) cor_pool_calloc(pool, sizeof(myslave_field_t));
@@ -34,21 +35,28 @@ myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_tr
         return -1;
     }
     /*  column name  */
-    f->name.size = strlen(row[0]);
-    f->name.data = (char *) cor_pool_alloc(pool, f->name.size + 1);
-    if (!f->name.data) {
-        cor_trace(trace, "can't cor_pool_alloc");
+    if (myslave_copy_str(&f->name, row[0], strlen(row[0]), pool) != 0) {
+        cor_trace(trace, "can't myslave_copy_str");
         return -1;
     }
-    memcpy(f->name.data, row[0], f->name.size + 1);
     /*  column type  */
-    myslave_table_set_field_type(f, row[1]);
-
+    myslave_table_set_field_type_and_size(f, row[1]);
+    /*  TODO set collation  */
+    
+    /*  nullable  */
+    f->null = strcmp(row[3], "YES") == 0;
+    /*  default  */
+    if (strcmp(row[5], "NULL") != 0) {
+        if (myslave_copy_str(&f->default_value, row[5], strlen(row[5]), pool) != 0) {
+            cor_trace(trace, "can't myslave_copy_str");
+            return -1;
+        }
+    }
     return 0;
 }
 
 void
-myslave_table_set_field_type(myslave_field_t *f, const char *name)
+myslave_table_set_field_type_and_size(myslave_field_t *f, const char *name)
 {
     int len = strlen(name);
     const char *name_end = name + len;
@@ -66,10 +74,7 @@ myslave_table_set_field_type(myslave_field_t *f, const char *name)
     /*  set type  */
     f->type = myslave_type_get_by_name(name, name_end - name);
     /*  set size  */
-    if (f->type == MYSLAVE_ENUM || f->type == MYSLAVE_SET) {
-        /*  TODO  */
-        return;
-    } else {
+    if (f->type != MYSLAVE_ENUM && f->type != MYSLAVE_SET) {
         for (const char *p = size_begin; p < size_end; p++) {
             if (*p < '0' || *p > '9') {
                 break;
