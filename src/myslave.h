@@ -5,6 +5,7 @@
 #include "cor_trace.h"
 
 #include "myslave_table.h"
+#include "myslave_utils.h"
 
 #define MYSLAVE_ERROR_SIZE 1024
 
@@ -12,10 +13,10 @@ typedef void (myslave_handler_t) (const char *table, myslave_event_type_t event,
 
 typedef struct
 {
-    char *host;
+    myslave_str_t host;
     int port;
-    char *user;
-    char *pwd;
+    myslave_str_t user;
+    myslave_str_t pwd;
     myslave_handler_t *handler;
     void *arg;
     /**/

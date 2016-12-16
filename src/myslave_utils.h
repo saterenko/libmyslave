@@ -17,7 +17,8 @@ myslave_copy_str(myslave_str_t *dst, const char *src, int size, cor_pool_t *pool
     if (!dst->data) {
         return -1;
     }
-    memcpy(dst->data, src, size + 1);
+    memcpy(dst->data, src, size);
+    dst->data[size] = '\0';
     return 0;
 }
 

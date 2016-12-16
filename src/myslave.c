@@ -7,8 +7,8 @@
 #include <m_ctype.h>
 #include <sql_common.h>
 
-#include "myslave.h"
 #include "cor_mysql.h"
+#include "myslave.h"
 
 #define MYSLAVE_POOL_SIZE 8 * 1024
 
@@ -37,34 +37,25 @@ myslave_new(const char *host, int port, const char *user, const char *pwd, mysla
         cor_pool_delete(pool);
         return NULL;
     }
-    size_t len = strlen(host);
-    my->host = (char *) cor_pool_alloc(pool, len + 1);
-    if (!my->host) {
+    if (myslave_copy_str(&my->host, host, strlen(host), pool) != 0) {
         cor_pool_delete(pool);
         return NULL;
     }
-    memcpy(my->host, host, len + 1);
     /*  copy user  */
     if (!user || strlen(user) == 0) {
         cor_pool_delete(pool);
         return NULL;
     }
-    len = strlen(user);
-    my->user = (char *) cor_pool_alloc(pool, len + 1);
-    if (!my->user) {
+    if (myslave_copy_str(&my->user, user, strlen(user), pool) != 0) {
         cor_pool_delete(pool);
         return NULL;
     }
-    memcpy(my->user, user, len + 1);
     /*  copy password  */
     if (pwd && strlen(pwd) > 0) {
-        len = strlen(pwd);
-        my->pwd = (char *) cor_pool_alloc(pool, len + 1);
-        if (!my->pwd) {
+        if (myslave_copy_str(&my->pwd, pwd, strlen(pwd), pool) != 0) {
             cor_pool_delete(pool);
             return NULL;
         }
-        memcpy(my->pwd, pwd, len + 1);
     }
     /*  init tables  */
     if (cor_array_init(&my->tables, pool, 16, sizeof(myslave_table_t)) != 0) {
@@ -110,28 +101,22 @@ myslave_add_table(myslave_t *my, const char *db, const char *table)
     }
     memset(t, 0, sizeof(myslave_table_t));
     /*  copy db name  */
-    t->db.size = strlen(db);
-    t->db.data = (char *) cor_pool_alloc(my->pool, t->db.size + 1);
-    if (!t->db.data) {
-        cor_trace(my->trace, "can't cor_pool_alloc");
+    if (myslave_copy_str(&t->db, db, strlen(db), my->pool) != 0) {
+        cor_trace(my->trace, "can't myslave_copy_str");
         return -1;
     }
-    memcpy(t->db.data, db, t->db.size + 1);
     /*  copy table name  */
-    t->name.size = strlen(table);
-    t->name.data = (char *) cor_pool_alloc(my->pool, t->name.size + 1);
-    if (!t->name.data) {
+    if (myslave_copy_str(&t->name, table, strlen(table), my->pool) != 0) {
         cor_trace(my->trace, "can't cor_pool_alloc");
         return -1;
     }
-    memcpy(t->name.data, table, t->name.size + 1);
     return 0;
 }
 
 int
 myslave_run(myslave_t *my)
 {
-    cor_mysql_t *m = cor_mysql_new(my->host, my->port, NULL, my->user, my->pwd);
+    cor_mysql_t *m = cor_mysql_new(my->host.data, my->port, NULL, my->user.data, my->pwd.data);
     if (!m) {
         cor_trace(my->trace, "can't cor_mysql_new");
         return -1;
