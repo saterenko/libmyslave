@@ -1,6 +1,3 @@
-#include "myslave.h"
-#include "cor_mysql.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,6 +6,9 @@
 #include <my_global.h>
 #include <m_ctype.h>
 #include <sql_common.h>
+
+#include "myslave.h"
+#include "cor_mysql.h"
 
 #define MYSLAVE_POOL_SIZE 8 * 1024
 

@@ -1,5 +1,8 @@
 #include "myslave_table.h"
 
+static int myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_trace_t *trace);
+static void myslave_table_set_field_type(myslave_field_t *f, const char *name);
+
 int
 myslave_table_load_info(myslave_table_t *t, cor_mysql_t *m, cor_pool_t *pool, cor_trace_t *trace)
 {
@@ -39,105 +42,39 @@ myslave_table_add_field(myslave_table_t *t, char **row, cor_pool_t *pool, cor_tr
     }
     memcpy(f->name.data, row[0], f->name.size + 1);
     /*  column type  */
-    char *p = strchr(row[1], '(');
+    myslave_table_set_field_type(f, row[1]);
 
+    return 0;
 }
 
 void
-myslave_table_set_field_type(myslave_field_t *f, const char *type_name)
+myslave_table_set_field_type(myslave_field_t *f, const char *name)
 {
-    /* !!! enum  */
-    int len = strlen(type_name);
-    const char *p = type_name;
-    const char *end = p + len;
+    int len = strlen(name);
+    const char *name_end = name + len;
+    const char *size_begin = NULL;
+    const char *size_end = NULL;
     /*  search for size  */
     for (int i = 0; i < len; i++) {
-        if (p[i] == '(') {
-            end = p + i;
-            for (; i < size; i++) {
-                if (p[i] >= '0' && p[i] <= '9') {
-                    f->size = f->size * 10 + (p[i] - '0');
-                } else if (p[i] == ')') {
-                    break;
-                }
-            }
-            break;
+        if (name[i] == '(') {
+            name_end = &name[i] + i;
+            size_begin = &name[i] + 1;
+        } else if (name[i] == ')') {
+            size_end = &name[i];
         }
     }
-    /*  determine type  */
-    switch (end - p) {
-        case 3:
-// bit 
-// int
-// set
-            break;
-        case 4:
-// blob
-// char
-// date 
-// enum
-// text 
-// time 
-// year 
-            break;
-        case 5:
-// float 
-            break;
-        case 6:
-// bigint
-// double 
-            break;
-        case 7:
-// decimal
-// tinyint
-// varchar
-            break;
-        case 8:
-// datetime 
-// longblob 
-// longtext 
-// smallint
-// tinyblob 
-// tinytext 
-            break;
-        case 9:
-// mediumint
-// timestamp 
-            break;
-        case 10:
-// mediumblob 
-// mediumtext 
-            break;
+    /*  set type  */
+    f->type = myslave_type_get_by_name(name, name_end - name);
+    /*  set size  */
+    if (f->type == MYSLAVE_ENUM || f->type == MYSLAVE_SET) {
+        /*  TODO  */
+        return;
+    } else {
+        for (const char *p = size_begin; p < size_end; p++) {
+            if (*p < '0' || *p > '9') {
+                break;
+            }
+            f->size = f->size * 10 + (*p - '0');
+        }
     }
-
 }
-
-
-/*
-  val_int | int(11) | (null) | NO |  | (null) | 
-  val_bigint | bigint(20) | (null) | NO |  | (null) | 
-  val_mediumint | mediumint(9) | (null) | NO |  | (null) | 
-  val_smallint | smallint(6) | (null) | NO |  | (null) | 
-  val_tinyint | tinyint(4) | (null) | NO |  | (null) | 
-  val_bit | bit(1) | (null) | YES |  | (null) | 
-  val_enum | enum('one','two','three') | utf8_unicode_ci | YES |  | one | 
-  val_set | set('one','two') | utf8_unicode_ci | YES |  | (null) | 
-  val_double | double | (null) | YES |  | (null) | 
-  val_decimal | decimal(10,0) | (null) | YES |  | (null) | 
-  val_float | float | (null) | YES |  | (null) | 
-  val_date | date | (null) | YES |  | (null) | 
-  val_datetime | datetime | (null) | YES |  | (null) | 
-  val_time | time | (null) | YES |  | (null) | 
-  val_timestamp | timestamp | (null) | YES |  | (null) | 
-  val_year | year(4) | (null) | YES |  | (null) | 
-  val_char | char(16) | utf8_unicode_ci | YES |  | (null) | 
-  val_varchar | varchar(256) | utf8_unicode_ci | YES |  | (null) | 
-  val_longtext | longtext | utf8_unicode_ci | YES |  | (null) | 
-  val_mediumtext | mediumtext | utf8_unicode_ci | YES |  | (null) | 
-  val_text | text | utf8_unicode_ci | YES |  | (null) | 
-  val_tinytext | tinytext | utf8_unicode_ci | YES |  | (null) | 
-  val_blob | blob | (null) | YES |  | (null) | 
-  val_longblob | longblob | (null) | YES |  | (null) | 
-  val_mediumblob | mediumblob | (null) | YES |  | (null) | 
-  val_tinyblob | tinyblob | (null) | YES |  | (null) | 
-*/

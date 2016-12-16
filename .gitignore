@@ -1,1 +1,3 @@
 objs
+src/test
+src/test.c

@@ -8,7 +8,7 @@
 
 #define MYSLAVE_ERROR_SIZE 1024
 
-typedef void (myslave_handler_t) (const char *table, enum myslave_event_e event, myslave_field_t **fields);
+typedef void (myslave_handler_t) (const char *table, myslave_event_type_t event, myslave_field_t **fields);
 
 typedef struct
 {
@@ -21,7 +21,7 @@ typedef struct
     /**/
     cor_array_t tables;
     cor_pool_t *pool;
-    cor_trace_t *t;
+    cor_trace_t *trace;
     char error[MYSLAVE_ERROR_SIZE + 1];
 } myslave_t;
 

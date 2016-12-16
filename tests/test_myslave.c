@@ -35,7 +35,7 @@ END;
 /*  Test myslave  */
 
 static void
-test_myslave_cb(const char *table, enum myslave_event_e event, myslave_field_t **fields)
+test_myslave_cb(const char *table, myslave_event_type_t event, myslave_field_t **fields)
 {
     printf("test_myslave_cb\n");
 }
