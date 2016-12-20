@@ -50,10 +50,11 @@ typedef struct
     myslave_str_t db;
     myslave_str_t name;
     /**/
-    int fields_size;
+    int nfields;
     myslave_field_t *fields;
 } myslave_table_t;
 
 int myslave_table_load_info(myslave_table_t *t, cor_mysql_t *m, cor_pool_t *pool, cor_trace_t *trace);
+void myslave_table_set_field_type_and_size(myslave_field_t *f, const char *name);
 
 #endif

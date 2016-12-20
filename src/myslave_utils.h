@@ -9,18 +9,9 @@ typedef struct
     char *data;
 } myslave_str_t;
 
-inline int
-myslave_copy_str(myslave_str_t *dst, const char *src, int size, cor_pool_t *pool)
-{
-    dst->size = size;
-    dst->data = (char *) cor_pool_alloc(pool, size + 1);
-    if (!dst->data) {
-        return -1;
-    }
-    memcpy(dst->data, src, size);
-    dst->data[size] = '\0';
-    return 0;
-}
+#define myslave_str_null {0, NULL}
+#define myslave_str_init(_s) {sizeof(_s) - 1, _s}
 
+int myslave_copy_str(myslave_str_t *dst, const char *src, int size, cor_pool_t *pool);
 
 #endif

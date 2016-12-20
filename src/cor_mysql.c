@@ -217,10 +217,12 @@ cor_mysql_connect(cor_mysql_t *m)
 {
     if (!mysql_real_connect(m->conn, m->host, m->usr, m->pwd, m->db, m->port, NULL, 0)) {
         snprintf(m->error, COR_MYSQL_ERROR_SIZE, "can't mysql_real_connect, error: %s (%d)", mysql_error(m->conn), mysql_errno(m->conn));
+        m->connected = 0;
         return -1;
     }
     if (m->charset) {
         if (cor_mysql_update(m, "set names '%s'", m->charset) != 0) {
+            m->connected = 0;
             return -1;
         }
     }
@@ -228,3 +230,8 @@ cor_mysql_connect(cor_mysql_t *m)
     return 0;
 }
 
+int
+cor_mysql_affected_rows(cor_mysql_t *m)
+{
+    return mysql_affected_rows(m->conn);
+}

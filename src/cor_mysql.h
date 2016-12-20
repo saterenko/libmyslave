@@ -38,5 +38,6 @@ MYSQL_RES *cor_mysql_query(cor_mysql_t *m, const char *query, ...);
 int cor_mysql_update(cor_mysql_t *m, const char *query, ...);
 char **cor_mysql_row(MYSQL_RES *res);
 void cor_mysql_res_free(MYSQL_RES *res);
+int cor_mysql_affected_rows(cor_mysql_t *m);
 
 #endif

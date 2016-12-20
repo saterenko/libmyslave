@@ -19,6 +19,7 @@ cor_trace_new(size_t size)
         free(t);
         return NULL;
     }
+    t->trace[0] = '\0';
     return t;
 }
 

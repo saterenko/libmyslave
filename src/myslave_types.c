@@ -1,5 +1,4 @@
 #include "myslave_types.h"
-#include <stdio.h>
 
 myslave_field_type_t
 myslave_type_get_by_name(const char *name, int size)
