@@ -5,7 +5,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "myslave_utils.h"
+#include "cor_str.h"
 
 #define myslave_ok  0
 #define myslave_error -1
@@ -65,16 +65,16 @@ typedef time_t myslave_datetime_t;
 typedef time_t myslave_time_t;
 typedef time_t myslave_timestamp_t;
 typedef int myslave_year_t;
-typedef myslave_str_t myslave_char_t;
-typedef myslave_str_t myslave_varchar_t;
-typedef myslave_str_t myslave_longtext_t;
-typedef myslave_str_t myslave_mediumtext_t;
-typedef myslave_str_t myslave_tinytext_t;
-typedef myslave_str_t myslave_text_t;
-typedef myslave_str_t myslave_blob_t;
-typedef myslave_str_t myslave_longblob_t;
-typedef myslave_str_t myslave_mediumblob_t;
-typedef myslave_str_t myslave_tinyblob_t;
+typedef cor_str_t myslave_char_t;
+typedef cor_str_t myslave_varchar_t;
+typedef cor_str_t myslave_longtext_t;
+typedef cor_str_t myslave_mediumtext_t;
+typedef cor_str_t myslave_tinytext_t;
+typedef cor_str_t myslave_text_t;
+typedef cor_str_t myslave_blob_t;
+typedef cor_str_t myslave_longblob_t;
+typedef cor_str_t myslave_mediumblob_t;
+typedef cor_str_t myslave_tinyblob_t;
 
 myslave_field_type_t myslave_type_get_by_name(const char *name, int size);
 

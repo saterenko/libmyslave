@@ -2,10 +2,10 @@
 #define MYSLAVE_H
 
 #include "cor_array.h"
+#include "cor_str.h"
 #include "cor_trace.h"
 
 #include "myslave_table.h"
-#include "myslave_utils.h"
 
 #define MYSLAVE_ERROR_SIZE 1024
 
@@ -13,14 +13,22 @@ typedef void (myslave_handler_t) (const char *table, myslave_event_type_t event,
 
 typedef struct
 {
-    myslave_str_t host;
+    cor_str_t name;
+    int size;
+} myslave_collation_t;
+
+typedef struct
+{
+    cor_str_t host;
     int port;
-    myslave_str_t user;
-    myslave_str_t pwd;
+    cor_str_t user;
+    cor_str_t pwd;
     myslave_handler_t *handler;
     void *arg;
     /**/
     cor_array_t tables;
+
+    /**/
     cor_pool_t *pool;
     cor_trace_t *trace;
     char error[MYSLAVE_ERROR_SIZE + 1];

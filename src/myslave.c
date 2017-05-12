@@ -14,6 +14,7 @@
 
 int myslave_mysql_check(myslave_t *my, cor_mysql_t *m);
 int myslave_mysql_version_to_int(const char *p);
+int myslave_load_collation_info(myslave_t *my, cor_mysql_t *m);
 int myslave_load_table_info(myslave_t *my, cor_mysql_t *m);
 
 myslave_t *
@@ -66,7 +67,7 @@ myslave_new(const char *host, int port, const char *user, const char *pwd, mysla
     my->trace = cor_trace_new(256);
     if (!my->trace) {
         myslave_delete(my);
-        return NULL;        
+        return NULL;
     }
 
     return my;
@@ -122,6 +123,10 @@ myslave_run(myslave_t *my)
         return -1;
     }
     if (myslave_mysql_check(my, m) != 0) {
+        cor_mysql_delete(m);
+        return -1;
+    }
+    if (myslave_load_collation_info(my, m) != 0) {
         cor_mysql_delete(m);
         return -1;
     }
@@ -223,22 +228,40 @@ myslave_mysql_version_to_int(const char *p)
 }
 
 int
+myslave_load_collation_info(myslave_t *my, cor_mysql_t *m)
+{
+    MYSQL_RES *res = cor_mysql_query(m, "SHOW CHARACTER SET");
+    if (!res) {
+        cor_trace(trace, "can't cor_mysql_query, error: %s", m->error);
+        return -1;
+    }
+    int nfields = cor_mysql_affected_rows(m);
+    if (nfields) {
+        t->fields = (myslave_field_t *) cor_pool_calloc(pool, sizeof(myslave_field_t) * nfields);
+        if (!t->fields) {
+            cor_trace(trace, "can't cor_pool_calloc");
+            return -1;
+        }
+    }
+    char **row;
+    while ((row = cor_mysql_row(res)) != NULL) {
+        if (myslave_table_add_field(t, row, pool, trace) != 0) {
+            cor_mysql_res_free(res);
+            return -1;
+        }
+    }
+    cor_mysql_res_free(res);
+
+}
+
+int
 myslave_load_table_info(myslave_t *my, cor_mysql_t *m)
 {
     myslave_table_t *tables = (myslave_table_t *) my->tables.elts;
     for (int i = 0; i < my->tables.nelts; i++) {
-        myslave_table_t *t = &tables[i];
-        MYSQL_RES *res = cor_mysql_query(m, "SHOW FULL COLUMNS FROM %s IN %s", t->name.data, t->db.data);
-        if (!res) {
-            cor_trace(my->trace, "can't cor_mysql_query, error: %s", m->error);
+        if (myslave_table_load_info(&tables[i], m, my->pool, my->trace) != 0) {
             return -1;
         }
-        char **row;
-        printf("%s.%s\n", t->db.data, t->name.data);
-        while ((row = cor_mysql_row(res)) != NULL) {
-            printf("  %s | %s | %s | %s | %s | %s | %s\n", row[0], row[1], row[2], row[3], row[4], row[5], row[6]);
-        }
-        cor_mysql_res_free(res);
     }
 
     return 0;

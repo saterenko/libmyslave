@@ -3,6 +3,7 @@
 
 #include "cor_mysql.h"
 #include "cor_pool.h"
+#include "cor_str.h"
 #include "cor_trace.h"
 
 #include "myslave_types.h"
@@ -38,17 +39,17 @@ typedef union {
 
 typedef struct
 {
-    myslave_str_t name;
+    cor_str_t name;
     myslave_field_type_t type;
-    myslave_str_t default_value;
+    cor_str_t default_value;
     int size;
     unsigned null:1;
 } myslave_field_t;
 
 typedef struct
 {
-    myslave_str_t db;
-    myslave_str_t name;
+    cor_str_t db;
+    cor_str_t name;
     /**/
     int nfields;
     myslave_field_t *fields;
